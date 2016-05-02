@@ -27,6 +27,7 @@ module.exports = {
     'apostrophe-files': {},
     'apostrophe-pages': {},
     'apostrophe-global': {},
+    'apostrophe-fuzzy-finder': {},
     'apostrophe-areas': {},
     'apostrophe-rich-text-widgets': {},
     'apostrophe-groups': {},

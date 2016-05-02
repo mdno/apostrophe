@@ -15,9 +15,20 @@
               <div class="apos-admin-bar-logo" data-apos-admin-bar-logo data-apos-actionable='data-apos-admin-bar'>
                 {% include 'logo.html' %}
               </div>
+              {% block apostropheMenuSearch %}
+              <div class="apos-fuzzy-finder" data-apos-fuzzy-finder-wrapper>
+                <div class="apos-fuzzy-finder-close fa fa-close" data-apos-fuzzy-finder-close></div>
+                <div class="apos-fuzzy-finder-inner">
+                  <input type="text" name="{{ field.name }}" data-apos-fuzzy-finder data-autocomplete placeholder="{{ __('What are you looking for?') }}" class="apos-field-input apos-field-input-text" />
+                </div>
+              </div>
+              {% endblock %}
               {% block apostropheMenuBody %}
               {# Default behavior for admin bar is to spit out every menu available except for pages. This can be overwritten with a project level outerLayout.html #}
               <div class="apos-admin-bar-items" data-apos-admin-bar-items>
+                <div class="apos-admin-bar-item" data-apos-fuzzy-finder-trigger>
+                  <div class="fa fa-search"></div>
+                </div>
                 {% for name, item in apos.modules %}
                   {% if apos.utils.isFunction(item.menu) and name != 'apostrophe-pages' %}
                     {{ item.menu() }}
