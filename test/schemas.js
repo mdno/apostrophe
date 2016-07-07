@@ -1,29 +1,9 @@
 var assert = require('assert');
 var _ = require('lodash');
 var async = require('async');
+var t = require('./testUtils');
 
 var apos;
-
-function anonReq() {
-  return {
-    res: {
-      __: function(x) { return x; }
-    },
-    browserCall: apos.app.request.browserCall,
-    getBrowserCalls: apos.app.request.getBrowserCalls,
-    query: {}
-  };
-}
-
-function adminReq() {
-  return _.merge(anonReq(), {
-    user: {
-      _permissions: {
-        admin: true
-      }
-    }
-  });
-}
 
 var simpleFields = [
   {
@@ -66,6 +46,9 @@ var simpleFields = [
 ];
 
 describe('Schemas', function() {
+
+  this.timeout(5000);
+
   //////
   // EXISTENCE
   //////
@@ -150,7 +133,7 @@ describe('Schemas', function() {
       irrelevant: 'Irrelevant',
       slug: 'This Is Cool'
     };
-    var req = adminReq();
+    var req = t.req.admin(apos);
     var result = {};
     return apos.schemas.convert(req, schema, 'form', input, result, function(err) {
       assert(!err);
@@ -175,7 +158,7 @@ describe('Schemas', function() {
     var input = {
       tags: [ 4, 5, 'Seven' ]
     };
-    var req = adminReq();
+    var req = t.req.admin(apos);
     var result = {};
     return apos.schemas.convert(req, schema, 'form', input, result, function(err) {
       assert(!err);
@@ -205,7 +188,7 @@ describe('Schemas', function() {
     var input = {
       password: 'silly'
     };
-    var req = adminReq();
+    var req = t.req.admin(apos);
     var result = { password: 'serious' };
     return apos.schemas.convert(req, schema, 'form', input, result, function(err) {
       assert(!err);
@@ -231,7 +214,7 @@ describe('Schemas', function() {
     var input = {
       password: ''
     };
-    var req = adminReq();
+    var req = t.req.admin(apos);
     var result = { password: 'serious' };
     return apos.schemas.convert(req, schema, 'form', input, result, function(err) {
       assert(!err);
@@ -271,7 +254,7 @@ describe('Schemas', function() {
         }
       ]
     };
-    var req = adminReq();
+    var req = t.req.admin(apos);
     var result = {};
     return apos.schemas.convert(req, schema, 'form', input, result, function(err) {
       assert(!err);

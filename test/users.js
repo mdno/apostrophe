@@ -2,32 +2,17 @@ var assert = require('assert');
 var _ = require('lodash');
 var async = require('async');
 var request = require('request');
+var t = require('./testUtils');
 
 var apos;
 
-function anonReq() {
-  return {
-    res: {
-      __: function(x) { return x; }
-    },
-    browserCall: apos.app.request.browserCall,
-    getBrowserCalls: apos.app.request.getBrowserCalls,
-    query: {}
-  };
-}
-
-function adminReq() {
-  return _.merge(anonReq(), {
-    user: {
-      _permissions: {
-        admin: true
-      }
-    }
-  });
-}
-
-
 describe('Users', function() {
+
+  this.timeout(5000);
+
+  after(function() {
+    apos.db.dropDatabase();
+  });
 
   //////
   // EXISTENCE
@@ -73,7 +58,7 @@ describe('Users', function() {
 
     assert(user.type === 'apostrophe-user');
     assert(apos.users.insert);
-    apos.users.insert(adminReq(), user, function(err) {
+    apos.users.insert(t.req.admin(apos), user, function(err) {
       assert(!err);
       done();
     });
@@ -90,7 +75,7 @@ describe('Users', function() {
 
   // retrieve a user by their username
   it('should be able to retrieve a user by their username', function(done){
-    apos.users.find(adminReq(), { username: 'JaneD' })
+    apos.users.find(t.req.admin(apos), { username: 'JaneD' })
       .toObject(function(err, user){
         assert(!err);
         assert(user);
@@ -100,7 +85,7 @@ describe('Users', function() {
   });
 
   it('should verify a user password', function(done){
-    apos.users.find(adminReq(), { username: 'JaneD' })
+    apos.users.find(t.req.admin(apos), { username: 'JaneD' })
       .toObject(function(err, user){
         assert(!err);
         assert(user);
@@ -114,7 +99,7 @@ describe('Users', function() {
   });
 
   it('should not verify an incorrect user password', function(done){
-    apos.users.find(adminReq(), { username: 'JaneD' })
+    apos.users.find(t.req.admin(apos), { username: 'JaneD' })
       .toObject(function(err, user){
         assert(!err);
         assert(user);
@@ -141,22 +126,22 @@ describe('Users', function() {
     assert(user.type === 'apostrophe-user');
 
     assert(apos.users.insert);
-    apos.users.insert(adminReq(), user, function(err) {
+    apos.users.insert(t.req.admin(apos), user, function(err) {
       assert(err);
       done();
     });
   });
 
   it('should succeed in updating a users property', function(done){
-    apos.users.find(adminReq(), { username: 'JaneD' })
+    apos.users.find(t.req.admin(apos), { username: 'JaneD' })
     .toObject(function(err, user){
       assert(!err);
       assert(user);
       assert(user.username == 'JaneD');
       user.firstName = 'Jill';
-      apos.users.update(adminReq(), user, function(err){
+      apos.users.update(t.req.admin(apos), user, function(err){
         assert(!err);
-        apos.users.find(adminReq(), { _id: user._id })
+        apos.users.find(t.req.admin(apos), { _id: user._id })
         .toObject(function(err, user){
           assert(!err);
           assert(user);
@@ -168,7 +153,7 @@ describe('Users', function() {
   });
 
   it('should verify a user password after their info has been updated', function(done){
-    apos.users.find(adminReq(), { username: 'JaneD' })
+    apos.users.find(t.req.admin(apos), { username: 'JaneD' })
     .toObject(function(err, user){
       assert(!err);
       assert(user);
@@ -183,16 +168,16 @@ describe('Users', function() {
 
   // change an existing user's password and verify the new password
   it('should change an existing user password and verify the new password', function(done){
-    apos.users.find(adminReq(), { username: 'JaneD' })
+    apos.users.find(t.req.admin(apos), { username: 'JaneD' })
     .toObject(function(err, user){
       assert(!err);
       assert(user);
       assert(user.username == 'JaneD');
       assert(!user.password);
       user.password = 'password123';
-      apos.users.update(adminReq(), user, function(err){
+      apos.users.update(t.req.admin(apos), user, function(err){
         assert(!err);
-        apos.users.find(adminReq(), { username: 'JaneD' })
+        apos.users.find(t.req.admin(apos), { username: 'JaneD' })
         .toObject(function(err, user){
           assert(!err);
           assert(user);

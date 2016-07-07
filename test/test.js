@@ -58,4 +58,9 @@ describe('Modules', function(){
   require('./login.js');
 
   require('./versions.js');
+
+  require('./images.js');
+
+  require('./oembed.js');
+
 });

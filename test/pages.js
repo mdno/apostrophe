@@ -2,31 +2,18 @@ var assert = require('assert');
 var _ = require('lodash');
 var async = require('async');
 var request = require('request');
+var t = require('./testUtils');
 
 var apos;
 
-function anonReq() {
-  return {
-    res: {
-      __: function(x) { return x; }
-    },
-    browserCall: apos.app.request.browserCall,
-    getBrowserCalls: apos.app.request.getBrowserCalls,
-    query: {}
-  };
-}
-
-function adminReq() {
-  return _.merge(anonReq(), {
-    user: {
-      _permissions: {
-        admin: true
-      }
-    }
-  });
-}
-
 describe('Pages', function() {
+
+  this.timeout(5000);
+
+  after(function() {
+    apos.db.dropDatabase();
+  });
+
   //////
   // EXISTENCE
   //////
@@ -83,7 +70,7 @@ describe('Pages', function() {
   });
 
   it('parked homepage exists', function(done) {
-    return apos.pages.find(anonReq(), { slug: '/' }).toObject(function(err, home) {
+    return apos.pages.find(t.req.anon(apos), { slug: '/' }).toObject(function(err, home) {
       assert(!err);
       assert(home);
       assert(home.slug === '/');
@@ -100,7 +87,7 @@ describe('Pages', function() {
   });
 
   it('parked trash can exists', function(done) {
-    return apos.pages.find(adminReq(), { slug: '/trash' }).published(null).trash(null).toObject(function(err, trash) {
+    return apos.pages.find(t.req.admin(apos), { slug: '/trash' }).published(null).trash(null).toObject(function(err, trash) {
       assert(!err);
       assert(trash);
       assert(trash.slug === '/trash');
@@ -166,10 +153,10 @@ describe('Pages', function() {
       {
         _id: '4333',
         type: 'testPage',
-        slug: 'another-parent',
+        slug: '/another-parent',
         published: true,
         path: '/another-parent',
-        level: 3,
+        level: 1,
         rank: 0
       }
     ];
@@ -187,12 +174,12 @@ describe('Pages', function() {
   //////
 
   it('should have a find method on pages that returns a cursor', function(){
-    var cursor = apos.pages.find(anonReq());
+    var cursor = apos.pages.find(t.req.anon(apos));
     assert(cursor);
   });
 
   it('should be able to find the parked homepage', function(done){
-    var cursor = apos.pages.find(anonReq(), { slug: '/' });
+    var cursor = apos.pages.find(t.req.anon(apos), { slug: '/' });
 
     cursor.toObject(function(err, page){
       assert(!err);
@@ -207,7 +194,7 @@ describe('Pages', function() {
 
 
   it('should be able to find just a single page', function(done){
-    var cursor = apos.pages.find(anonReq(), { slug: '/child' });
+    var cursor = apos.pages.find(t.req.anon(apos), { slug: '/child' });
 
     cursor.toObject(function(err, page){
       assert(!err);
@@ -220,7 +207,7 @@ describe('Pages', function() {
   });
 
   it('should be able to include the ancestors of a page', function(done){
-    var cursor = apos.pages.find(anonReq(), { slug: '/child' });
+    var cursor = apos.pages.find(t.req.anon(apos), { slug: '/child' });
 
     cursor.ancestors(true).toObject(function(err, page){
       assert(!err);
@@ -237,7 +224,7 @@ describe('Pages', function() {
   });
 
   it('should be able to include just one ancestor of a page, i.e. the parent', function(done) {
-    var cursor = apos.pages.find(anonReq(), { slug: '/child' });
+    var cursor = apos.pages.find(t.req.anon(apos), { slug: '/child' });
 
     cursor.ancestors({ depth: 1 }).toObject(function(err, page){
       assert(!err);
@@ -252,7 +239,7 @@ describe('Pages', function() {
   });
 
   it('should be able to include the children of the ancestors of a page', function(done){
-    var cursor = apos.pages.find(anonReq(), { slug: '/child' });
+    var cursor = apos.pages.find(t.req.anon(apos), { slug: '/child' });
 
     cursor.ancestors({children: 1}).toObject(function(err, page){
       assert(!err);
@@ -278,12 +265,12 @@ describe('Pages', function() {
     var parentId = '1234';
 
     var newPage = {
-      slug: 'new-page',
+      slug: '/new-page',
       published: true,
       type: 'testPage',
       title: 'New Page'
     };
-    apos.pages.insert(adminReq(), parentId, newPage, function(err, page){
+    apos.pages.insert(t.req.admin(apos), parentId, newPage, function(err, page){
       // did it return an error?
       assert(!err);
       //Is the path generally correct?
@@ -293,7 +280,7 @@ describe('Pages', function() {
   });
 
   it('is able to insert a new page in the correct order', function(done) {
-    var cursor = apos.pages.find(anonReq(), { slug: 'new-page' });
+    var cursor = apos.pages.find(t.req.anon(apos), { slug: '/new-page' });
 
     cursor.toObject(function(err, page){
       assert.equal(page.rank, 2);
@@ -308,12 +295,12 @@ describe('Pages', function() {
   it('is able to move root/parent/sibling/cousin after root/parent', function(done) {
     // 'Cousin' _id === 4312
     // 'Parent' _id === 1234
-    apos.pages.move(adminReq(), '4312', '1234', 'after', function(err) {
+    apos.pages.move(t.req.admin(apos), '4312', '1234', 'after', function(err) {
       if (err) {
         console.log(err);
       }
       assert(!err);
-      var cursor = apos.pages.find(anonReq(), {_id: '4312'});
+      var cursor = apos.pages.find(t.req.anon(apos), {_id: '4312'});
       cursor.toObject(function(err, page){
         if (err) {
           console.log(err);
@@ -332,12 +319,12 @@ describe('Pages', function() {
   it('is able to move root/cousin before root/parent/child', function(done) {
     // 'Cousin' _id === 4312
     // 'Child' _id === 2341
-    apos.pages.move(adminReq(), '4312', '2341', 'before', function(err) {
+    apos.pages.move(t.req.admin(apos), '4312', '2341', 'before', function(err) {
       if (err) {
         console.log(err);
       }
       assert(!err);
-      var cursor = apos.pages.find(anonReq(), {_id: '4312'});
+      var cursor = apos.pages.find(t.req.anon(apos), {_id: '4312'});
       cursor.toObject(function(err, page){
         if (err) {
           console.log(err);
@@ -356,12 +343,12 @@ describe('Pages', function() {
   it('is able to move root/parent/cousin inside root/parent/sibling', function(done) {
     // 'Cousin' _id === 4312
     // 'Sibling' _id === 4321
-    apos.pages.move(adminReq(), '4312', '4321', 'inside', function(err) {
+    apos.pages.move(t.req.admin(apos), '4312', '4321', 'inside', function(err) {
       if (err) {
         console.log(err);
       }
       assert(!err);
-      var cursor = apos.pages.find(anonReq(), {_id: '4312'});
+      var cursor = apos.pages.find(t.req.anon(apos), {_id: '4312'});
       cursor.toObject(function(err, page){
         if (err) {
           console.log(err);
@@ -378,12 +365,12 @@ describe('Pages', function() {
   });
 
   it('moving /parent into /another-parent should also move /parent/sibling', function(done) {
-    apos.pages.move(adminReq(), '1234', '4333', 'inside', function(err) {
+    apos.pages.move(t.req.admin(apos), '1234', '4333', 'inside', function(err) {
       if (err) {
         console.log(err);
       }
       assert(!err);
-      var cursor = apos.pages.find(anonReq(), {_id: '4321'});
+      var cursor = apos.pages.find(t.req.anon(apos), {_id: '4321'});
       cursor.toObject(function(err, page){
         if (err) {
           console.log(err);
@@ -405,18 +392,76 @@ describe('Pages', function() {
       assert.equal(response.statusCode, 200);
       //Did we get our page back?
       assert(body.match(/Sing to me, Oh Muse./));
+      // Does the response prove that data.home was available?
+      assert(body.match(/Home: \//));
+      // Does the response prove that data.home._children was available?
+      assert(body.match(/Tab: \/another-parent/));
       //console.log(body);
       return done();
     })
   });
+
   it('should not be able to serve a nonexistent page', function(done){
     return request('http://localhost:7940/nobodyschild', function(err, response, body){
       assert(!err);
-      //Is our status code good?
+      // Is our status code good?
       assert.equal(response.statusCode, 404);
+      // Does the response prove that data.home was available?
+      assert(body.match(/Home: \//));
+      // Does the response prove that data.home._children was available?
+      assert(body.match(/Tab: \/another-parent/));
       //console.log(body);
       return done();
     })
+  });
+
+  it('should detect that the home page is an ancestor of any page except itself', function() {
+    assert(
+      apos.pages.isAncestorOf({
+          path: '/'
+        }, {
+          path: '/about'
+        }
+      )
+    );
+    assert(
+      apos.pages.isAncestorOf({
+          path: '/'
+        }, {
+          path: '/about/grandkid'
+        }
+      )
+    );
+    assert(!
+      apos.pages.isAncestorOf({
+          path: '/'
+        }, {
+          path: '/'
+        }
+      )
+    );
+
+  });
+
+  it('should detect a tab as the ancestor of its great grandchild but not someone else\'s', function() {
+    assert(
+      apos.pages.isAncestorOf({
+          path: '/about'
+        }, {
+          path: '/about/test/thing'
+        }
+      )
+    );
+
+    assert(
+      !apos.pages.isAncestorOf({
+          path: '/about'
+        }, {
+          path: '/wiggy/test/thing'
+        }
+      )
+    );
+
   });
 
 });

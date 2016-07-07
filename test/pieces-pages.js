@@ -2,31 +2,18 @@ var assert = require('assert');
 var _ = require('lodash');
 var async = require('async');
 var request = require('request');
+var t = require('./testUtils');
 
 var apos;
 
-function anonReq() {
-  return {
-    res: {
-      __: function(x) { return x; }
-    },
-    browserCall: apos.app.request.browserCall,
-    getBrowserCalls: apos.app.request.getBrowserCalls,
-    query: {}
-  };
-}
+describe('Pieces Pages', function() {
 
-function adminReq() {
-  return _.merge(anonReq(), {
-    user: {
-      _permissions: {
-        admin: true
-      }
-    }
+  this.timeout(5000);
+
+  after(function() {
+    apos.db.dropDatabase();
   });
-}
 
-describe('pieces-pages', function() {
   //////
   // EXISTENCE
   //////
@@ -105,7 +92,7 @@ describe('pieces-pages', function() {
   });
 
   it('should populate the ._url property of pieces in any docs query', function(done) {
-    return apos.docs.find(anonReq(), { type: 'event', title: 'Event 001' }).toObject(function(err, piece) {
+    return apos.docs.find(t.req.anon(apos), { type: 'event', title: 'Event 001' }).toObject(function(err, piece) {
       assert(!err);
       assert(piece);
       assert(piece._url);

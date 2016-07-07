@@ -2,6 +2,9 @@
   <head>
     <title>{% block title %}{% endblock %}</title>
     {{ apos.assets.stylesheets(data.when) }}
+    {% block standardHead %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% endblock %}
     {% block extraHead %}
     {% endblock %}
   </head>
@@ -55,6 +58,7 @@
     {% endif %}
     <div class="apos-refreshable" data-apos-refreshable>
       {% block beforeMain %}{% endblock %}
+      <a name="main"></a>
       {% block main %}{% endblock %}
       {% block afterMain %}{% endblock %}
     </div>
