@@ -49,7 +49,7 @@
     "moment": "^2.9.0",
     "mongodb": "^2.0.0",
     "moog-require": "^0.4.0",
-    "nunjucks": "^2.0.0",
+    "nunjucks": "^3.2.1",
     "oembetter": "^0.1.10",
     "passport": "^0.3.0",
     "passport-local": "^1.0.0",
@@ -66,7 +66,7 @@
     "underscore.string": "^3.0.2",
     "uploadfs": "^1.1.8",
     "xregexp": "^2.0.0",
-    "yargs": "^3.0.0"
+    "yargs": "^16.0.0"
   },
   "devDependencies": {
     "mocha": "^3.0.0"
