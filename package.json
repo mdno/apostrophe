@@ -62,7 +62,7 @@
     "sanitize-html": "^1.7.0",
     "sluggo": "^0.2.0",
     "syntax-error": "^1.1.6",
-    "uglify-js": "^2.4.16",
+    "uglify-js": "^3.14.3",
     "underscore.string": "^3.0.2",
     "uploadfs": "^1.1.8",
     "xregexp": "^2.0.0",
