@@ -50,7 +50,7 @@
     "mongodb": "^2.0.0",
     "moog-require": "^0.4.0",
     "nunjucks": "^2.0.0",
-    "oembetter": "^0.1.10",
+    "oembetter": "^1.1.0",
     "passport": "^0.3.0",
     "passport-local": "^1.0.0",
     "path-to-regexp": "^1.2.0",
