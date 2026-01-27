@@ -33,7 +33,7 @@
     "credential": "^1.0.0",
     "cuid": "^1.2.5",
     "deep-get-set": "^0.1.1",
-    "diff": "^2.1.0",
+    "diff": "^4.0.4",
     "express": "^4.11.2",
     "express-session": "^1.10.3",
     "glob": "^5.0.0",
